@@ -10,7 +10,10 @@
 Compatibilidad del entorno de desarrollo
 
 ```yaml
-database:
+npm: 24.14.0. (LTS)
+python@3.12
+
+database: PostgreSQL
   nombre_bd:
   usuario:
   contrasena:
@@ -18,13 +21,19 @@ database:
 
 # Instalación de dependencias (Solo la primera vez)
 
+	Los saltos de línea de Git (CRLF vs LF): Windows guarda los archivos de texto con un salto de línea invisible llamado CRLF, mientras que Mac y Linux usan LF. Si no configuran esto, cuando un compañero de Windows suba un archivo, Git podría marcar como si hubiera modificado todo el documento.
+> Todos ejecuten este comando en su terminal global antes de tocar el repositorio: 
+```bash
+git config --global core.autocrlf true
+```
+
 ### En la carpeta de Python (agent-python/)
 
 ```bash
 cd agent-python
 
 # Crear el entorno virtual
-python3 -m venv env
+python3.12 -m venv env
 
 # Activar el entorno virtual:
 # -> En Mac/Linux:
@@ -80,8 +89,10 @@ En otra instancia:
 cd agent-python
 # Asegurarse de activar el entorno primero:
 source env/bin/activate  # (o .\env\Scripts\activate en Windows)
-python main.py  #( o python3 main.py)
+python main.py  #( o python3.13 main.py)
 
+#Finalmente asegurate que este corriendo en ese entorno la version python 3.12
+python --version
 ```
 
 En resumen:
