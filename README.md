@@ -81,21 +81,23 @@ pnpm install
 
 # Probar la app
 
-Para probar todo el flujo (Huella -> NestJS -> Angular), debes necesitar abrir tres pestañas o terminales diferentes al mismo tiempo, porque cada servicio corre en un puerto distinto de la computadora.
+# Probar la app
+
+Gracias a la integración de **Turborepo**, ya no es necesario abrir múltiples pestañas de la terminal para inicializar los proyectos de Node.js de forma separada. Turborepo se encarga de orquestar y levantar el ecosistema en paralelo.
+
+### 1. Iniciar Backend (NestJS) y Frontend (Angular) simultáneamente
+
+Desde la carpeta raíz del proyecto (`sigep/`), ejecuta el comando unificado de desarrollo:
 
 ```bash
-# En la raiz del proyecto monorepo
-pnpm --filter back-end start:dev
+pnpm dev
+
 
 ```
 
-> (El comando start:dev es clave porque activa el modo "watch": cada vez que alguien guarde un cambio en el código de NestJS, el servidor se reiniciará solo).
+> Nota: Este comando levantará automáticamente NestJS (en modo watch con reinicio automático al guardar cambios) y el servidor de desarrollo de Angular, unificando las salidas de texto en una sola pantalla con prefijos de colores para cada aplicación.
 
-```bash
-#En otro instancia de terminal
-pnpm --filter front-end start
-
-```
+El componente de hardware interactúa con el lector de huellas de forma aislada. Abre una segunda pestaña en tu terminal y ejecuta los comandos:
 
 ```bash
 #En otro instancia de terminal
