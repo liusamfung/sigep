@@ -13,6 +13,7 @@ Compatibilidad del entorno de desarrollo
 npm: 24.14.0. (LTS)
 python@3.12
 
+
 database: PostgreSQL
   nombre_bd: (Revisar el docker-compose.yaml)
   usuario: (Revisar el docker-compose.yaml)
@@ -21,6 +22,11 @@ database: PostgreSQL
 ```
 
 E iniciar la base de datos desde el docker.
+
+> IMPORTANTE: RECUERDA SI TIENES INSTALADO PostgreSQL EN TU COMPUTADORA
+> RECUERDA DETENER EL SERVICIO, YA QUE SI NO LO HACES. EL NODEJS APUNTARA POR DEFECTO
+> A ESE SERVICIO, Y NO A NUESTRO CONTENEDOR COMPOSE DONDE ESTA NUESTRA BASE DE DATOS
+> YA QUE COMPARTEN EL MISMO PUERTO.
 
 ```bash
 #Estando en el root principal

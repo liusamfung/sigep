@@ -16,11 +16,13 @@ build/
 .angular/
 /coverage
 /.nyc_output
+back-end/generated/
 
 # Variables de entorno (¡Crítico no subirlas!)
 .env
 .env.local
 .env.*.local
+**/.env
 
 # Logs y temporales
 logs
