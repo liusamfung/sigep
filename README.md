@@ -14,15 +14,26 @@ npm: 24.14.0. (LTS)
 python@3.12
 
 database: PostgreSQL
-  nombre_bd:
-  usuario:
-  contrasena:
+  nombre_bd: (Revisar el docker-compose.yaml)
+  usuario: (Revisar el docker-compose.yaml)
+  contrasena: (Revisar el docker-compose.yaml)
+
+```
+
+E iniciar la base de datos desde el docker.
+
+```bash
+#Estando en el root principal
+docker compose up -d # La bandera -d significa que la hará en detach, es decir, no bloqueará tu terminal
+
 ```
 
 # Instalación de dependencias (Solo la primera vez)
 
-	Los saltos de línea de Git (CRLF vs LF): Windows guarda los archivos de texto con un salto de línea invisible llamado CRLF, mientras que Mac y Linux usan LF. Si no configuran esto, cuando un compañero de Windows suba un archivo, Git podría marcar como si hubiera modificado todo el documento.
-> Todos ejecuten este comando en su terminal global antes de tocar el repositorio: 
+    Los saltos de línea de Git (CRLF vs LF): Windows guarda los archivos de texto con un salto de línea invisible llamado CRLF, mientras que Mac y Linux usan LF. Si no configuran esto, cuando un compañero de Windows suba un archivo, Git podría marcar como si hubiera modificado todo el documento.
+
+> Todos ejecuten este comando en su terminal global antes de tocar el repositorio:
+
 ```bash
 git config --global core.autocrlf true
 ```
