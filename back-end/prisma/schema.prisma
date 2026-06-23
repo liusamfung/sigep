@@ -7,37 +7,49 @@ generator client {
    previewFeatures = ["driverAdapters"]
 }
 
+model Pabellon {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  celdas    Celda[]
+  createdAt DateTime @default(now())
+}
+
 model Celda {
-  id        Int     @id @default(autoincrement())
-  numero    String  @unique
-  pabellon  String
-  capacidad Int
-  presos    Preso[]
+  id         String   @id @default(uuid())
+  codigo     String   @unique // Ej: "A-101"
+  pabellonId String
+  pabellon   Pabellon @relation(fields: [pabellonId], references: [id], onDelete: Cascade)
+  presos     Preso[]
 }
 
 model Preso {
-  id            String            @id @default(uuid())
-  nombre        String
-  apellido      String
-  biometricoId  Int               @unique
-  estado        EstadoPreso       @default(AUSENTE)
-  celdaId       Int
-  celda         Celda             @relation(fields: [celdaId], references: [id])
-  accesos       RegistroAcceso[]
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id          String       @id @default(uuid())
+  codigoUnico String       @unique // Código o DNI del interno
+  nombre      String
+  apellido    String
+  estado      EstadoPreso  @default(ACTIVO) // Para la baja lógica (RF03)
+  huellaToken String?      @unique // ID único de huella simulado (RF07)
+  celdaId     String
+  celda       Celda        @relation(fields: [celdaId], references: [id])
+  asistencias Asistencia[]
+  createdAt   DateTime     @default(now())
 }
 
-model RegistroAcceso {
-  id        String   @id @default(uuid())
+model Asistencia {
+  id        String           @id @default(uuid())
   presoId   String
-  preso     Preso    @relation(fields: [presoId], references: [id])
-  tipo      String   
-  timestamp DateTime @default(now())
+  preso     Preso            @relation(fields: [presoId], references: [id], onDelete: Cascade)
+  fechaHora DateTime         @default(now())
+  estado    EstadoAsistencia @default(PRESENTE)
 }
 
 enum EstadoPreso {
-  CELDA
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoAsistencia {
+  PRESENTE
   AUSENTE
   FUGA
 }
