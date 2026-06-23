@@ -42,18 +42,21 @@ cd ..
 
 ### En la carpeta del Backend (back-end/)
 
+Ahora el proyecto utiliza un Monorepo gestionado con pnpm! Ya no es necesario ingresar carpeta por carpeta para instalar las dependencias de Node.js.
+
+1. En la Raíz del Proyecto
+   Desde la carpeta principal (sigep), ejecuta el siguiente comando para instalar de forma optimizada todas las dependencias de Angular y NestJS en un solo paso:
+
 ```bash
-cd back-end
-npm install
-cd ..
+pnpm install
 ```
 
-### En la carpeta del Frontend (front-end/)
+[!TIP] Nota de seguridad: Si pnpm arroja un aviso bloqueando los scripts de compilación de herramientas nativas del entorno (esbuild, @parcel/watcher, etc.), simplemente ejecuta:
 
 ```bash
-cd front-end
-npm install
-cd ..
+pnpm approve-builds --all
+
+pnpm install
 ```
 
 # Probar la app
@@ -61,26 +64,26 @@ cd ..
 Para probar todo el flujo (Huella -> NestJS -> Angular), debes necesitar abrir tres pestañas o terminales diferentes al mismo tiempo, porque cada servicio corre en un puerto distinto de la computadora.
 
 ```bash
-cd back-end
-npm run start:dev
+# En la raiz del proyecto monorepo
+pnpm --filter back-end start:dev
+
 ```
 
 > (El comando start:dev es clave porque activa el modo "watch": cada vez que alguien guarde un cambio en el código de NestJS, el servidor se reiniciará solo).
 
-En otra instacia:
-
 ```bash
-cd front-end
-ng serve
+#En otro instancia de terminal
+pnpm --filter front-end start
+
 ```
 
-En otra instancia:
-
 ```bash
+#En otro instancia de terminal
 cd agent-python
-# Asegurarse de activar el entorno primero:
+
 source env/bin/activate  # (o .\env\Scripts\activate en Windows)
-python main.py  #( o python3 main.py)
+
+python main.py           # (o python3 main.py)
 
 ```
 
