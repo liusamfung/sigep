@@ -1,11 +1,14 @@
 {
   "name": "front-end",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "dev": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+    "lint": "echo 'No lint script configured for front-end'",
     "test": "ng test"
   },
   "prettier": {
@@ -20,8 +23,6 @@
       }
     ]
   },
-  "private": true,
-  "packageManager": "npm@11.9.0",
   "dependencies": {
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",
@@ -44,3 +45,4 @@
     "vitest": "^4.0.8"
   }
 }
+
