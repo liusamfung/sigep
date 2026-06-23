@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+   previewFeatures = ["driverAdapters"]
+}
+
+model Celda {
+  id        Int     @id @default(autoincrement())
+  numero    String  @unique
+  pabellon  String
+  capacidad Int
+  presos    Preso[]
+}
+
+model Preso {
+  id            String            @id @default(uuid())
+  nombre        String
+  apellido      String
+  biometricoId  Int               @unique
+  estado        EstadoPreso       @default(AUSENTE)
+  celdaId       Int
+  celda         Celda             @relation(fields: [celdaId], references: [id])
+  accesos       RegistroAcceso[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model RegistroAcceso {
+  id        String   @id @default(uuid())
+  presoId   String
+  preso     Preso    @relation(fields: [presoId], references: [id])
+  tipo      String   
+  timestamp DateTime @default(now())
+}
+
+enum EstadoPreso {
+  CELDA
+  AUSENTE
+  FUGA
+}
