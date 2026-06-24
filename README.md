@@ -21,27 +21,83 @@ database: PostgreSQL
 
 ```
 
-E iniciar la base de datos desde el docker.
-
-> IMPORTANTE: RECUERDA SI TIENES INSTALADO PostgreSQL EN TU COMPUTADORA
-> RECUERDA DETENER EL SERVICIO, YA QUE SI NO LO HACES. EL NODEJS APUNTARA POR DEFECTO
-> A ESE SERVICIO, Y NO A NUESTRO CONTENEDOR COMPOSE DONDE ESTA NUESTRA BASE DE DATOS
-> YA QUE COMPARTEN EL MISMO PUERTO.
-
-```bash
-#Estando en el root principal
-docker compose up -d # La bandera -d significa que la hará en detach, es decir, no bloqueará tu terminal
-
-```
-
 # Instalación de dependencias (Solo la primera vez)
 
     Los saltos de línea de Git (CRLF vs LF): Windows guarda los archivos de texto con un salto de línea invisible llamado CRLF, mientras que Mac y Linux usan LF. Si no configuran esto, cuando un compañero de Windows suba un archivo, Git podría marcar como si hubiera modificado todo el documento.
 
 > Todos ejecuten este comando en su terminal global antes de tocar el repositorio:
 
+1.
+
 ```bash
 git config --global core.autocrlf true
+```
+
+2.
+
+```bash
+git clone https://github.com/liusamfung/sigep.git
+cd sigep
+```
+
+3.
+
+```bash
+pnpm install || pnpm approve-builds --all
+```
+
+4.
+
+```bash
+pnpm --filter back-end exec ts-node prisma/seed.ts
+```
+
+5. > IMPORTANTE: Copiar el archivo .env (Que esta en el whatsApp) a
+   > la carpeta sigep/back-end).
+6.
+
+```bash
+pnpm --filter back-end exec prisma migrate dev
+```
+
+7.
+
+```bash
+pnpm --filter back-end exec prisma generate
+```
+
+8.
+
+```bash
+pnpm --filter back-end exec ts-node prisma/seed.ts
+```
+
+> IMPORTANTE: RECUERDA SI TIENES INSTALADO PostgreSQL EN TU COMPUTADORA
+> RECUERDA DETENER EL SERVICIO, YA QUE SI NO LO HACES. EL NODEJS APUNTARA POR DEFECTO
+> A ESE SERVICIO, Y NO A NUESTRO CONTENEDOR COMPOSE DONDE ESTA NUESTRA BASE DE DATOS
+> YA QUE COMPARTEN EL MISMO PUERTO.
+
+# Probar la app
+
+Gracias a la integración de **Turborepo**, ya no es necesario abrir múltiples pestañas de la terminal para inicializar los proyectos de Node.js de forma separada. Turborepo se encarga de orquestar y levantar el ecosistema en paralelo.
+Desde la carpeta raíz del proyecto (`sigep/`), ejecuta el comando unificado de desarrollo:
+
+```bash
+pnpm turbo dev
+```
+
+El componente de hardware interactúa con el lector de huellas de forma aislada. Abre una segunda pestaña en tu terminal y ejecuta los comandos:
+
+```bash
+#En otro instancia de terminal
+cd agent-python
+
+source env/bin/activate  # (o .\env\Scripts\activate en Windows)
+
+python main.py           # (o python3 main.py)
+
+#Finalmente asegurate que este corriendo en ese entorno la version python 3.12
+python --version
 ```
 
 ### En la carpeta de Python (agent-python/)
@@ -64,57 +120,6 @@ pip install -r requirements.txt
 # Regresar a la raíz
 cd ..
 
-```
-
-### En la carpeta del Backend (back-end/)
-
-Ahora el proyecto utiliza un Monorepo gestionado con pnpm! Ya no es necesario ingresar carpeta por carpeta para instalar las dependencias de Node.js.
-
-1. En la Raíz del Proyecto
-   Desde la carpeta principal (sigep), ejecuta el siguiente comando para instalar de forma optimizada todas las dependencias de Angular y NestJS en un solo paso:
-
-```bash
-pnpm install
-```
-
-[!TIP] Nota de seguridad: Si pnpm arroja un aviso bloqueando los scripts de compilación de herramientas nativas del entorno (esbuild, @parcel/watcher, etc.), simplemente ejecuta:
-
-```bash
-pnpm approve-builds --all
-
-pnpm install
-```
-
-# Probar la app
-
-# Probar la app
-
-Gracias a la integración de **Turborepo**, ya no es necesario abrir múltiples pestañas de la terminal para inicializar los proyectos de Node.js de forma separada. Turborepo se encarga de orquestar y levantar el ecosistema en paralelo.
-
-### 1. Iniciar Backend (NestJS) y Frontend (Angular) simultáneamente
-
-Desde la carpeta raíz del proyecto (`sigep/`), ejecuta el comando unificado de desarrollo:
-
-```bash
-pnpm dev
-
-
-```
-
-> Nota: Este comando levantará automáticamente NestJS (en modo watch con reinicio automático al guardar cambios) y el servidor de desarrollo de Angular, unificando las salidas de texto en una sola pantalla con prefijos de colores para cada aplicación.
-
-El componente de hardware interactúa con el lector de huellas de forma aislada. Abre una segunda pestaña en tu terminal y ejecuta los comandos:
-
-```bash
-#En otro instancia de terminal
-cd agent-python
-
-source env/bin/activate  # (o .\env\Scripts\activate en Windows)
-
-python main.py           # (o python3 main.py)
-
-#Finalmente asegurate que este corriendo en ese entorno la version python 3.12
-python --version
 ```
 
 En resumen:
