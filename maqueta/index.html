@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGEP · Sistema de Gestión y Control Biométrico Penitenciario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0E1B2E; --navy-2:#14263E; --navy-3:#1C3454;
+  --bg:#EEF2F7; --card:#FFFFFF; --line:#E2E8F0; --line-2:#EDF1F6;
+  --ink:#16202E; --muted:#647488; --muted-2:#90A0B2;
+  --primary:#1F5FCC; --primary-d:#194FA8;
+  --green:#188A4E; --green-bg:#E5F4EB;
+  --amber:#C97A12; --amber-bg:#FBEFD9;
+  --red:#C32E2E; --red-bg:#FAE6E6;
+  --violet:#6D49C2;
+  --s1:#1F5FCC; --s2:#0E8C8C; --s3:#C97A12; --s4:#6D49C2;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --sans:'Inter',system-ui,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+.mono{font-family:var(--mono)}
+
+/* ============ LOGIN ============ */
+#login{position:fixed;inset:0;display:flex;background:var(--navy);z-index:50}
+.login-art{flex:1;position:relative;overflow:hidden;display:none;align-items:center;justify-content:center;
+  background:radial-gradient(120% 100% at 30% 20%,#1C3454 0%,#0E1B2E 60%)}
+.login-art::after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--navy-3) 1px,transparent 1px),linear-gradient(90deg,var(--navy-3) 1px,transparent 1px);
+  background-size:46px 46px;opacity:.25;mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent)}
+.login-art .brand-xl{position:relative;text-align:center;color:#fff}
+.login-art .fp{width:150px;height:150px;margin:0 auto 28px;opacity:.92}
+.login-art h1{font-size:54px;font-weight:800;letter-spacing:6px}
+.login-art p{color:#9FB3CC;margin-top:10px;letter-spacing:2px;font-size:13px;text-transform:uppercase}
+.login-form-wrap{width:440px;max-width:100%;display:flex;align-items:center;justify-content:center;padding:40px;background:#fff}
+.login-card{width:100%;max-width:320px}
+.login-card .logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.login-card .logo .dot{width:34px;height:34px;border-radius:8px;background:var(--navy);display:grid;place-items:center}
+.login-card .logo b{font-size:20px;letter-spacing:3px}
+.login-card .sub{color:var(--muted);font-size:12.5px;margin-bottom:30px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,95,204,.12)}
+.btn-primary{width:100%;background:var(--primary);color:#fff;padding:12px;border-radius:8px;font-weight:600;font-size:14px;transition:.15s}
+.btn-primary:hover{background:var(--primary-d)}
+.login-foot{margin-top:24px;font-size:11.5px;color:var(--muted-2);text-align:center;line-height:1.6}
+
+/* ============ APP SHELL ============ */
+#app{display:none;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:248px;background:var(--navy);color:#C7D4E3;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0}
+.side .top{padding:18px 18px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07)}
+.side .top .mark{width:32px;height:32px;border-radius:8px;background:#fff;display:grid;place-items:center}
+.side .top b{color:#fff;font-size:17px;letter-spacing:3px}
+.side .top span{display:block;font-size:10px;color:#7E93AC;letter-spacing:1px}
+.nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav .group{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:#62789a;margin:14px 12px 6px;font-weight:700}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#B6C5D8;font-size:13.5px;font-weight:500;cursor:pointer;position:relative}
+.nav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav a.active{background:var(--navy-3);color:#fff}
+.nav a.active::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#4D8BF0}
+.nav a svg{width:17px;height:17px;flex-shrink:0;opacity:.85}
+.spr{margin-left:auto;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;letter-spacing:.5px}
+.spr.s1{background:rgba(31,95,204,.22);color:#7FB0FF}
+.spr.s2{background:rgba(14,140,140,.22);color:#5BD3D3}
+.spr.s3{background:rgba(201,122,18,.22);color:#F0B45C}
+.spr.s4{background:rgba(109,73,194,.24);color:#B69BF0}
+.side .who{padding:12px 16px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.side .who .av{width:34px;height:34px;border-radius:50%;background:var(--navy-3);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px}
+.side .who .nm{font-size:13px;color:#fff;font-weight:600}
+.side .who .rl{font-size:11px;color:#7E93AC}
+
+/* main */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 26px;gap:16px;position:sticky;top:0;z-index:20}
+.topbar .crumb{font-size:13px;color:var(--muted)}
+.topbar .crumb b{color:var(--ink)}
+.topbar .clock{margin-left:auto;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg);padding:6px 12px;border-radius:7px}
+.topbar .loc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.topbar .pill-live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:600}
+.topbar .pill-live i{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 0 0 rgba(24,138,78,.5);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(24,138,78,.5)}70%{box-shadow:0 0 0 7px rgba(24,138,78,0)}100%{box-shadow:0 0 0 0 rgba(24,138,78,0)}}
+.content{padding:26px;flex:1}
+.screen{display:none}
+.screen.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* page head */
+.phead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.phead h2{font-size:21px;font-weight:700;letter-spacing:-.2px}
+.phead p{color:var(--muted);font-size:13px;margin-top:3px}
+.phead .tag{font-size:11px;font-weight:700;color:#fff;padding:3px 9px;border-radius:6px;margin-left:8px;vertical-align:middle}
+.btn{padding:9px 15px;border-radius:8px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.btn:hover{background:var(--bg)}
+.btn svg{width:15px;height:15px}
+.btn.pri{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.pri:hover{background:var(--primary-d)}
+
+/* cards & grid */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stat .lbl{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px}
+.stat .lbl svg{width:16px;height:16px}
+.stat .num{font-size:30px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+.stat .sub{font-size:11.5px;color:var(--muted-2);margin-top:2px}
+.stat.ok .num{color:var(--green)} .stat.warn .num{color:var(--amber)} .stat.dng .num{color:var(--red)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel .ph{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between}
+.panel .ph .mini{font-size:12px;color:var(--muted);font-weight:500}
+.panel .pb{padding:18px}
+.two-col{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:11px 16px;background:#F7F9FC;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line)}
+td{padding:12px 16px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#FAFBFD}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px}
+.badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-gray{background:#EEF1F5;color:var(--muted)}
+.avatar{width:30px;height:30px;border-radius:8px;background:var(--navy-3);color:#fff;display:inline-grid;place-items:center;font-size:11px;font-weight:700;margin-right:9px;vertical-align:middle}
+.iname{display:flex;align-items:center}
+.iname .nm{font-weight:600}.iname .id{font-size:11px;color:var(--muted)}
+.tbtn{padding:5px 10px;font-size:12px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-weight:600}
+.tbtn:hover{background:var(--bg);color:var(--ink)}
+.tbtn.go{color:var(--primary);border-color:#C9DBF5}
+
+/* form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(31,95,204,.1)}
+.fg.full{grid-column:1/-1}
+.photo-drop{border:1.5px dashed var(--line);border-radius:10px;height:150px;display:grid;place-items:center;color:var(--muted-2);font-size:12.5px;text-align:center;background:#FBFCFE}
+.photo-drop svg{width:30px;height:30px;display:block;margin:0 auto 8px;opacity:.5}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+
+/* biometric */
+.bio-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:18px}
+.scanner{background:var(--navy);border-radius:14px;padding:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;min-height:380px;position:relative;overflow:hidden}
+.scanner::after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--navy-3) 1px,transparent 1px),linear-gradient(90deg,var(--navy-3) 1px,transparent 1px);background-size:34px 34px;opacity:.18}
+.fp-ring{width:184px;height:184px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:1;background:radial-gradient(circle,#15294310,#0E1B2E00)}
+.fp-ring .fp{width:128px;height:128px;color:#6FA0E6;transition:.3s}
+.fp-ring.scanning .fp{color:#4D8BF0}
+.fp-ring.done .fp{color:#39C07A}
+.fp-ring.fail .fp{color:#E66A6A}
+.scan-line{position:absolute;left:28px;right:28px;height:2px;background:linear-gradient(90deg,transparent,#4D8BF0,transparent);top:30px;opacity:0;z-index:2;box-shadow:0 0 12px #4D8BF0}
+.fp-ring.scanning .scan-line{opacity:1;animation:scan 1.1s linear infinite}
+@keyframes scan{0%{top:30px}100%{top:154px}}
+.scanner .st{margin-top:22px;font-size:14px;color:#A9BDD6;z-index:1;min-height:20px}
+.scanner .st b{color:#fff}
+.scanner .prog{width:200px;height:6px;background:rgba(255,255,255,.12);border-radius:6px;margin-top:16px;overflow:hidden;z-index:1}
+.scanner .prog i{display:block;height:100%;width:0;background:#4D8BF0;border-radius:6px;transition:width .1s linear}
+.bio-side .res{margin-top:14px;border-radius:10px;padding:14px 16px;display:none;align-items:center;gap:12px}
+.bio-side .res.show{display:flex}
+.bio-side .res.ok{background:var(--green-bg);color:var(--green)}
+.bio-side .res.bad{background:var(--red-bg);color:var(--red)}
+.bio-side .res .ic{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;flex-shrink:0}
+.kv{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:13px}
+.kv:last-child{border:none}.kv span{color:var(--muted)} .kv b{font-weight:600}
+
+/* schedule chips */
+.slot{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+.slot .t{font-family:var(--mono);font-size:17px;font-weight:600}
+.slot .d{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle{width:42px;height:24px;border-radius:20px;background:var(--green);position:relative;flex-shrink:0}
+.toggle i{position:absolute;top:3px;left:21px;width:18px;height:18px;border-radius:50%;background:#fff}
+.toggle.off{background:#CBD5E1}.toggle.off i{left:3px}
+
+/* alerts */
+.alert-item{display:flex;gap:14px;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+.alert-item:last-child{border:none}
+.alert-item .ai{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.alert-item.red .ai{background:var(--red-bg);color:var(--red)}
+.alert-item.amber .ai{background:var(--amber-bg);color:var(--amber)}
+.alert-item .at{font-weight:600;font-size:13.5px}
+.alert-item .am{font-size:12.5px;color:var(--muted);margin-top:2px}
+.alert-item .tm{margin-left:auto;font-size:11.5px;color:var(--muted-2);font-family:var(--mono);white-space:nowrap}
+
+/* donut + bars */
+.donut-wrap{display:flex;align-items:center;gap:22px}
+.legend{font-size:13px}
+.legend .lg{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.legend .lg b{margin-left:auto;font-family:var(--mono)}
+.legend .sw{width:11px;height:11px;border-radius:3px}
+.barrow{margin-bottom:14px}
+.barrow .bt{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.barrow .bt b{font-family:var(--mono)}
+.bar{height:9px;background:#EDF1F6;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+
+.note{font-size:11.5px;color:var(--muted-2);margin-top:14px;display:flex;align-items:center;gap:7px}
+.note svg{width:14px;height:14px}
+
+@media(min-width:1100px){.login-art{display:flex}}
+@media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.two-col,.row2,.bio-wrap,.form-grid{grid-template-columns:1fr}.side{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="login-art">
+    <div class="brand-xl">
+      <svg class="fp" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M50 12c-21 0-38 17-38 38v8"/><path d="M50 24c-14 0-26 12-26 26v16"/>
+        <path d="M50 36c-8 0-14 6-14 14v22"/><path d="M50 48c-2 0-2 2-2 4v30"/>
+        <path d="M88 50c0-21-17-38-38-38"/><path d="M76 50v12"/><path d="M64 50c0-8-6-14-14-14"/>
+        <path d="M62 64v18"/><path d="M50 60v22"/>
+      </svg>
+      <h1>SIGEP</h1>
+      <p>Control Biométrico Penitenciario</p>
+    </div>
+  </div>
+  <div class="login-form-wrap">
+    <div class="login-card">
+      <div class="logo"><span class="dot"><svg width="20" height="20" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><path d="M50 18c-18 0-32 14-32 32v6"/><path d="M50 32c-10 0-18 8-18 18v14"/><path d="M50 46c-2 0-2 2-2 4v24"/><path d="M82 50c0-18-14-32-32-32"/></svg></span><b>SIGEP</b></div>
+      <div class="sub">Acceso al sistema de seguridad · Penal de Ancón</div>
+      <div class="field"><label>Usuario</label><input value="jsantos" /></div>
+      <div class="field"><label>Contraseña</label><input type="password" value="········" /></div>
+      <div class="field"><label>Rol</label><select><option>Jefe de Seguridad</option><option>Supervisor de Pabellón</option><option>Guardia</option><option>Administrador</option></select></div>
+      <button class="btn-primary" onclick="enter()">Ingresar al sistema</button>
+      <div class="login-foot">Acceso restringido a personal autorizado.<br>Sistema de Gestión Penitenciaria · v1.0 · 2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="top">
+      <span class="mark"><svg width="20" height="20" viewBox="0 0 100 100" fill="none" stroke="#0E1B2E" stroke-width="5" stroke-linecap="round"><path d="M50 18c-18 0-32 14-32 32v6"/><path d="M50 32c-10 0-18 8-18 18v14"/><path d="M50 46c-2 0-2 2-2 4v24"/><path d="M82 50c0-18-14-32-32-32"/></svg></span>
+      <div><b>SIGEP</b><span>Penal de Ancón</span></div>
+    </div>
+    <nav class="nav">
+      <div class="group">Principal</div>
+      <a data-s="dashboard" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard<span class="spr s4">S4</span></a>
+
+      <div class="group">Gestión</div>
+      <a data-s="internos" onclick="go('internos',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 3-4.5 5.5-4.5S14 16 14.5 19"/><path d="M16 8h5M16 12h5M18 16h3"/></svg>Internos<span class="spr s1">S1</span></a>
+      <a data-s="personal" onclick="go('personal',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/><path d="M12 14v6"/></svg>Personal de Seguridad<span class="spr s1">S1</span></a>
+
+      <div class="group">Control Biométrico</div>
+      <a data-s="bioreg" onclick="go('bioreg',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 4C7 4 3.5 7.5 3.5 12v4"/><path d="M12 7.5c-3 0-5 2-5 5v4.5"/><path d="M12 11c-1 0-1.5.8-1.5 2v5"/><path d="M20.5 12c0-4.5-3.5-8-8.5-8"/><path d="M16 12v3"/></svg>Registro de Huella<span class="spr s2">S2</span></a>
+      <a data-s="bioval" onclick="go('bioval',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>Validación de Huella<span class="spr s2">S2</span></a>
+
+      <div class="group">Asistencia</div>
+      <a data-s="horarios" onclick="go('horarios',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Horarios de Pase de Lista<span class="spr s3">S3</span></a>
+      <a data-s="paselista" onclick="go('paselista',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 1.5-1.5M4 12l1 1 1.5-1.5M4 18l1 1 1.5-1.5"/></svg>Pase de Lista<span class="spr s3">S3</span></a>
+      <a data-s="alertas" onclick="go('alertas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6Z"/><path d="M10.5 20a2 2 0 0 0 3 0"/></svg>Alertas<span class="spr s3">S3</span></a>
+    </nav>
+    <div class="who"><div class="av">JS</div><div><div class="nm">Jorge Santos</div><div class="rl">Jefe de Seguridad</div></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb"><b id="crumb">Dashboard de Monitoreo</b></div>
+      <div class="loc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>Penal de Ancón · Lima</div>
+      <div class="pill-live"><i></i>Sistema en línea</div>
+      <div class="clock" id="clock">--:--:--</div>
+    </header>
+    <div class="content">
+
+      <!-- ===== DASHBOARD (S4) ===== -->
+      <section class="screen" id="screen-dashboard">
+        <div class="phead"><div><h2>Dashboard de Monitoreo<span class="tag" style="background:var(--s4)">Sprint 4</span></h2><p>Estado de presencia de internos y alertas en tiempo real</p></div>
+          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 4v4h-4"/></svg>Actualizar</button></div>
+        <div class="cards">
+          <div class="stat"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Total internos</div><div class="num">486</div><div class="sub">4 pabellones activos</div></div>
+          <div class="stat ok"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Presentes</div><div class="num">472</div><div class="sub">97.1% del total</div></div>
+          <div class="stat warn"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>Ausentes</div><div class="num">14</div><div class="sub">Último pase: 18:00</div></div>
+          <div class="stat dng"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6Z"/></svg>Alertas activas</div><div class="num">3</div><div class="sub">Requieren atención</div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="ph">Asistencia por pabellón<span class="mini">Pase de lista · 18:00</span></div>
+            <div class="pb">
+              <div class="barrow"><div class="bt"><span>Pabellón A</span><b>126/128</b></div><div class="bar"><i style="width:98%;background:var(--green)"></i></div></div>
+              <div class="barrow"><div class="bt"><span>Pabellón B</span><b>118/120</b></div><div class="bar"><i style="width:98%;background:var(--green)"></i></div></div>
+              <div class="barrow"><div class="bt"><span>Pabellón C</span><b>108/118</b></div><div class="bar"><i style="width:91%;background:var(--amber)"></i></div></div>
+              <div class="barrow"><div class="bt"><span>Pabellón D</span><b>120/120</b></div><div class="bar"><i style="width:100%;background:var(--green)"></i></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph">Distribución actual</div>
+            <div class="pb">
+              <div class="donut-wrap">
+                <svg width="120" height="120" viewBox="0 0 42 42">
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="#EDF1F6" stroke-width="7"/>
+                  <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--green)" stroke-width="7" stroke-dasharray="97 3" stroke-dashoffset="25" stroke-linecap="round"/>
+                  <text x="21" y="20" text-anchor="middle" font-size="7" font-weight="700" fill="#16202E">97%</text>
+                  <text x="21" y="27" text-anchor="middle" font-size="3.2" fill="#647488">presentes</text>
+                </svg>
+                <div class="legend">
+                  <div class="lg"><span class="sw" style="background:var(--green)"></span>Presentes<b>472</b></div>
+                  <div class="lg"><span class="sw" style="background:var(--amber)"></span>Ausentes<b>14</b></div>
+                  <div class="lg"><span class="sw" style="background:var(--red)"></span>En alerta<b>3</b></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="ph">Alertas críticas recientes<span class="mini">Tiempo real</span></div>
+          <div class="alert-item red"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Interno ausente no justificado · INT-0142</div><div class="am">No registró huella en el pase de lista · Pabellón C · Celda 24</div></div><div class="tm">18:02</div></div>
+          <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Lectura biométrica fallida · INT-0098</div><div class="am">3 intentos sin coincidencia · Pabellón B · reintento manual requerido</div></div><div class="tm">17:58</div></div>
+          <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Pabellón C bajo el umbral de asistencia</div><div class="am">91% de presencia · 10 internos pendientes de registrar</div></div><div class="tm">18:00</div></div>
+        </div>
+      </section>
+
+      <!-- ===== INTERNOS LISTA (S1) ===== -->
+      <section class="screen" id="screen-internos">
+        <div class="phead"><div><h2>Internos<span class="tag" style="background:var(--s1)">Sprint 1</span></h2><p>Registro, actualización y baja lógica de internos</p></div>
+          <button class="btn pri" onclick="go('intform',null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo interno</button></div>
+        <div class="panel">
+          <div class="ph">486 internos registrados<span class="mini">Filtrar: Todos los pabellones</span></div>
+          <table>
+            <thead><tr><th>Interno</th><th>Pabellón / Celda</th><th>Ingreso</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="intbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== INTERNO FORM (S1) ===== -->
+      <section class="screen" id="screen-intform">
+        <div class="phead"><div><h2>Registrar interno<span class="tag" style="background:var(--s1)">Sprint 1</span></h2><p>Complete los datos del nuevo interno</p></div>
+          <button class="btn" onclick="go('internos',null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Volver</button></div>
+        <div class="two-col">
+          <div class="panel"><div class="ph">Datos del interno</div><div class="pb">
+            <div class="form-grid">
+              <div class="fg"><label>Nombres</label><input placeholder="Ej. Carlos Alberto"/></div>
+              <div class="fg"><label>Apellidos</label><input placeholder="Ej. Ramírez Soto"/></div>
+              <div class="fg"><label>Identificador (ID)</label><input class="mono" value="INT-0487" /></div>
+              <div class="fg"><label>Documento (DNI)</label><input placeholder="00000000"/></div>
+              <div class="fg"><label>Pabellón</label><select><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
+              <div class="fg"><label>Celda</label><input placeholder="Ej. 24"/></div>
+              <div class="fg"><label>Fecha de ingreso</label><input type="date" value="2026-06-24"/></div>
+              <div class="fg"><label>Estado</label><select><option>Activo</option><option>Dado de baja</option></select></div>
+              <div class="fg full"><label>Observaciones</label><textarea rows="2" placeholder="Notas adicionales..."></textarea></div>
+            </div>
+            <div class="form-actions"><button class="btn" onclick="go('internos',null)">Cancelar</button><button class="btn pri" onclick="go('internos',null)">Guardar interno</button></div>
+          </div></div>
+          <div class="panel"><div class="ph">Fotografía</div><div class="pb">
+            <div class="photo-drop"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.5-2h5L16 6"/></svg>Subir fotografía<br><span style="font-size:11px">JPG o PNG · máx 2 MB</span></div></div>
+            <div class="kv" style="margin-top:16px"><span>Huella biométrica</span><b style="color:var(--amber)">Pendiente de registro</b></div>
+            <div class="kv"><span>Próximo paso</span><b>Sprint 2 · Captura</b></div>
+            <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>La huella se registra desde el módulo biométrico.</div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== PERSONAL (S1) ===== -->
+      <section class="screen" id="screen-personal">
+        <div class="phead"><div><h2>Personal de Seguridad<span class="tag" style="background:var(--s1)">Sprint 1</span></h2><p>Alta de personal y asignación de guardias a pabellones</p></div>
+          <button class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo personal</button></div>
+        <div class="row2">
+          <div class="panel">
+            <div class="ph">Guardias asignados</div>
+            <table>
+              <thead><tr><th>Guardia</th><th>Pabellón</th><th>Turno</th></tr></thead>
+              <tbody id="perbody"></tbody>
+            </table>
+          </div>
+          <div class="panel"><div class="ph">Asignar guardia a pabellón</div><div class="pb">
+            <div class="fg" style="margin-bottom:14px"><label>Personal de seguridad</label><select><option>Selecciona un guardia...</option><option>Luis Mendoza Quispe</option><option>Ana Torres Ríos</option><option>Pedro Salas Vega</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Pabellón</label><select><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Turno</label><select><option>Mañana (06:00 - 14:00)</option><option>Tarde (14:00 - 22:00)</option><option>Noche (22:00 - 06:00)</option></select></div>
+            <button class="btn pri" style="width:100%;justify-content:center">Asignar guardia</button>
+            <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>Cada pabellón requiere al menos un guardia por turno.</div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== BIOMÉTRICO REGISTRO (S2) ===== -->
+      <section class="screen" id="screen-bioreg">
+        <div class="phead"><div><h2>Registro de Huella<span class="tag" style="background:var(--s2)">Sprint 2</span></h2><p>Captura y asociación de la huella dactilar con el interno</p></div></div>
+        <div class="bio-wrap">
+          <div>
+            <div class="scanner" id="scan1">
+              <div class="fp-ring" id="ring1">
+                <div class="scan-line"></div>
+                <svg class="fp" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M50 12c-21 0-38 17-38 38v8"/><path d="M50 24c-14 0-26 12-26 26v16"/><path d="M50 36c-8 0-14 6-14 14v22"/><path d="M50 48c-2 0-2 2-2 4v30"/><path d="M88 50c0-21-17-38-38-38"/><path d="M76 50v12"/><path d="M64 50c0-8-6-14-14-14"/><path d="M62 64v18"/><path d="M50 60v22"/></svg>
+              </div>
+              <div class="st" id="st1">Coloque el dedo del interno en el <b>lector SecuGen</b></div>
+              <div class="prog"><i id="pr1"></i></div>
+            </div>
+          </div>
+          <div class="bio-side">
+            <div class="panel"><div class="ph">Interno a registrar</div><div class="pb">
+              <div class="kv"><span>Nombre</span><b>Carlos A. Ramírez Soto</b></div>
+              <div class="kv"><span>Identificador</span><b class="mono">INT-0487</b></div>
+              <div class="kv"><span>Pabellón / Celda</span><b>Pabellón A · Celda 24</b></div>
+              <div class="kv"><span>Dispositivo</span><b>SecuGen Hamster Pro</b></div>
+              <div class="kv"><span>Estado de la huella</span><b id="status1" style="color:var(--amber)">No registrada</b></div>
+              <button class="btn pri" id="btn1" style="width:100%;justify-content:center;margin-top:16px" onclick="capture()">Iniciar lectura de huella</button>
+              <div class="res ok" id="res1"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div><div><b>Huella registrada y asociada</b><div style="font-size:12px;opacity:.85">Vinculada a INT-0487 correctamente</div></div></div>
+            </div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== BIOMÉTRICO VALIDACIÓN (S2) ===== -->
+      <section class="screen" id="screen-bioval">
+        <div class="phead"><div><h2>Validación de Huella<span class="tag" style="background:var(--s2)">Sprint 2</span></h2><p>Verificación de identidad mediante huella dactilar</p></div></div>
+        <div class="bio-wrap">
+          <div>
+            <div class="scanner" id="scan2">
+              <div class="fp-ring" id="ring2">
+                <div class="scan-line"></div>
+                <svg class="fp" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M50 12c-21 0-38 17-38 38v8"/><path d="M50 24c-14 0-26 12-26 26v16"/><path d="M50 36c-8 0-14 6-14 14v22"/><path d="M50 48c-2 0-2 2-2 4v30"/><path d="M88 50c0-21-17-38-38-38"/><path d="M76 50v12"/><path d="M64 50c0-8-6-14-14-14"/><path d="M62 64v18"/><path d="M50 60v22"/></svg>
+              </div>
+              <div class="st" id="st2">Escanee la huella para <b>verificar la identidad</b></div>
+              <div class="prog"><i id="pr2"></i></div>
+            </div>
+          </div>
+          <div class="bio-side">
+            <div class="panel"><div class="ph">Resultado de la verificación</div><div class="pb">
+              <div class="kv"><span>Estado</span><b id="vstate">En espera</b></div>
+              <div class="kv"><span>Confianza de coincidencia</span><b class="mono" id="vmatch">— %</b></div>
+              <div class="kv"><span>Tiempo de respuesta</span><b class="mono" id="vtime">— s</b></div>
+              <button class="btn pri" id="btn2" style="width:100%;justify-content:center;margin-top:16px" onclick="validate()">Escanear huella</button>
+              <div class="res ok" id="res2"><div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div><div><b>Identidad verificada</b><div style="font-size:12px;opacity:.85" id="vname">INT-0487 · Carlos A. Ramírez</div></div></div>
+            </div></div>
+            <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>El requisito RNF02 exige respuesta en menos de 2 segundos.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== HORARIOS (S3) ===== -->
+      <section class="screen" id="screen-horarios">
+        <div class="phead"><div><h2>Horarios de Pase de Lista<span class="tag" style="background:var(--s3)">Sprint 3</span></h2><p>Configuración de los horarios de control de asistencia</p></div>
+          <button class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo horario</button></div>
+        <div class="row2">
+          <div class="panel"><div class="ph">Horarios configurados</div><div class="pb">
+            <div class="slot"><div><div class="t">06:00</div><div class="d">Pase de lista matutino · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
+            <div class="slot"><div><div class="t">12:00</div><div class="d">Control de mediodía · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
+            <div class="slot"><div><div class="t">18:00</div><div class="d">Pase de lista vespertino · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
+            <div class="slot"><div><div class="t">22:00</div><div class="d">Control nocturno · Todos los pabellones</div></div><div class="toggle off"><i></i></div></div>
+          </div></div>
+          <div class="panel"><div class="ph">Configuración del control</div><div class="pb">
+            <div class="fg" style="margin-bottom:14px"><label>Tolerancia de registro</label><select><option>5 minutos</option><option>10 minutos</option><option>15 minutos</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Acción ante ausencia</label><select><option>Marcar ausente y generar alerta</option><option>Solo marcar ausente</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Notificar a</label><select><option>Jefe de Seguridad</option><option>Supervisor de Pabellón</option></select></div>
+            <div class="kv"><span>Pases de lista diarios</span><b>3 activos</b></div>
+            <div class="kv"><span>Próximo pase</span><b class="mono">22:00</b></div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- ===== PASE DE LISTA (S3) ===== -->
+      <section class="screen" id="screen-paselista">
+        <div class="phead"><div><h2>Pase de Lista<span class="tag" style="background:var(--s3)">Sprint 3</span></h2><p>Registro biométrico de asistencia · Pabellón C · 18:00</p></div>
+          <button class="btn" onclick="markAbsent()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>Marcar ausentes restantes</button></div>
+        <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat ok"><div class="lbl">Presentes</div><div class="num" id="pCount">5</div></div>
+          <div class="stat warn"><div class="lbl">Pendientes</div><div class="num" id="pPend">2</div></div>
+          <div class="stat dng"><div class="lbl">Ausentes</div><div class="num" id="pAbs">1</div></div>
+        </div>
+        <div class="panel">
+          <div class="ph">Lista de control · Celdas 20-27<span class="mini">Registro por huella</span></div>
+          <table>
+            <thead><tr><th>Interno</th><th>Celda</th><th>Hora de registro</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="palbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ALERTAS (S3) ===== -->
+      <section class="screen" id="screen-alertas">
+        <div class="phead"><div><h2>Alertas<span class="tag" style="background:var(--s3)">Sprint 3</span></h2><p>Notificaciones de incidencias al Jefe de Seguridad</p></div>
+          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Marcar todo como leído</button></div>
+        <div class="panel">
+          <div class="ph">Alertas activas<span class="mini">3 sin atender</span></div>
+          <div class="alert-item red"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Interno ausente no justificado</div><div class="am">INT-0142 · Pabellón C · Celda 24 · No registró huella en el pase de las 18:00</div></div><div class="tm">18:02</div></div>
+          <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Lectura biométrica fallida</div><div class="am">INT-0098 · Pabellón B · 3 intentos sin coincidencia · reintento manual requerido</div></div><div class="tm">17:58</div></div>
+          <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Pabellón bajo umbral de asistencia</div><div class="am">Pabellón C · 91% de presencia · 10 internos pendientes de registrar</div></div><div class="tm">18:00</div></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="ph">Historial · Resueltas</div>
+          <div class="alert-item amber" style="opacity:.6"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div><div class="at">Ausencia resuelta · INT-0077</div><div class="am">Interno localizado en enfermería · justificado por el supervisor</div></div><div class="tm">12:14</div></div>
+          <div class="alert-item amber" style="opacity:.6"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div><div><div class="at">Lectura corregida · INT-0031</div><div class="am">Registro manual validado por el guardia de turno</div></div><div class="tm">06:21</div></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const internos=[
+  ["Carlos A. Ramírez Soto","INT-0118","Pabellón A","12","2024-03-11","activo"],
+  ["Miguel Á. Flores Díaz","INT-0142","Pabellón C","24","2023-11-02","activo"],
+  ["José L. Quispe Mamani","INT-0098","Pabellón B","08","2025-01-19","activo"],
+  ["Andrés P. Huamán Rojas","INT-0203","Pabellón D","31","2022-07-30","activo"],
+  ["Víctor R. Castro León","INT-0077","Pabellón A","04","2024-09-05","activo"],
+  ["Daniel E. Vargas Ríos","INT-0256","Pabellón C","17","2025-06-12","activo"],
+  ["Roberto C. Ñañez Vega","INT-0031","Pabellón B","22","2021-12-01","baja"],
+  ["Luis F. Apaza Torres","INT-0310","Pabellón D","09","2026-02-28","activo"],
+];
+const personal=[
+  ["Luis Mendoza Quispe","Pabellón A","Mañana"],
+  ["Ana Torres Ríos","Pabellón B","Tarde"],
+  ["Pedro Salas Vega","Pabellón C","Tarde"],
+  ["Rosa Núñez Campos","Pabellón D","Noche"],
+  ["Jorge Lévano Pérez","Pabellón A","Noche"],
+];
+const pase=[
+  ["Carlos A. Ramírez","20","17:46","presente"],
+  ["Marco A. Díaz Ponce","21","17:47","presente"],
+  ["Miguel á. Flores Díaz","24","—","pendiente"],
+  ["Sergio Pinto Ramos","25","17:49","presente"],
+  ["Iván Loayza Cruz","26","—","ausente"],
+  ["Felipe Romero Lara","27","17:50","presente"],
+  ["Hugo Bravo Salinas","22","17:51","presente"],
+  ["Raúl Medina Ortiz","23","—","pendiente"],
+];
+
+const TITLES={dashboard:"Dashboard de Monitoreo",internos:"Internos",intform:"Registrar interno",personal:"Personal de Seguridad",bioreg:"Registro de Huella",bioval:"Validación de Huella",horarios:"Horarios de Pase de Lista",paselista:"Pase de Lista",alertas:"Alertas"};
+
+function badge(st){
+  if(st==="activo"||st==="presente")return '<span class="badge b-green"><i></i>'+(st==="activo"?"Activo":"Presente")+'</span>';
+  if(st==="baja")return '<span class="badge b-gray"><i></i>Dado de baja</span>';
+  if(st==="ausente")return '<span class="badge b-red"><i></i>Ausente</span>';
+  return '<span class="badge b-amber"><i></i>Pendiente</span>';
+}
+function initials(n){const p=n.split(" ");return (p[0][0]+(p[p.length-1][0]||"")).toUpperCase();}
+
+function renderInternos(){
+  document.getElementById("intbody").innerHTML=internos.map(r=>`
+   <tr><td><div class="iname"><span class="avatar">${initials(r[0])}</span><div><div class="nm">${r[0]}</div><div class="id mono">${r[1]}</div></div></div></td>
+   <td>${r[2]} · Celda ${r[3]}</td><td class="mono">${r[4]}</td><td>${badge(r[5])}</td>
+   <td style="text-align:right"><button class="tbtn">Editar</button></td></tr>`).join("");
+}
+function renderPersonal(){
+  document.getElementById("perbody").innerHTML=personal.map(r=>`
+   <tr><td><div class="iname"><span class="avatar">${initials(r[0])}</span><div class="nm">${r[0]}</div></div></td>
+   <td>${r[1]}</td><td><span class="badge b-gray">${r[2]}</span></td></tr>`).join("");
+}
+function renderPase(){
+  document.getElementById("palbody").innerHTML=pase.map((r,i)=>`
+   <tr><td><div class="iname"><span class="avatar">${initials(r[0])}</span><div class="nm">${r[0]}</div></div></td>
+   <td>Celda ${r[1]}</td><td class="mono">${r[2]}</td><td>${badge(r[3])}</td>
+   <td style="text-align:right">${r[3]==="pendiente"?`<button class="tbtn go" onclick="regPase(${i})">Registrar huella</button>`:""}</td></tr>`).join("");
+  document.getElementById("pCount").textContent=pase.filter(p=>p[3]==="presente").length;
+  document.getElementById("pPend").textContent=pase.filter(p=>p[3]==="pendiente").length;
+  document.getElementById("pAbs").textContent=pase.filter(p=>p[3]==="ausente").length;
+}
+function regPase(i){const t=new Date();pase[i][2]=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");pase[i][3]="presente";renderPase();}
+function markAbsent(){pase.forEach(p=>{if(p[3]==="pendiente")p[3]="ausente";});renderPase();}
+
+/* ---------- navigation ---------- */
+function go(s,el){
+  document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+  const sc=document.getElementById("screen-"+s);if(sc)sc.classList.add("active");
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.remove("active"));
+  const link=el||document.querySelector('.nav a[data-s="'+s+'"]');if(link)link.classList.add("active");
+  document.getElementById("crumb").textContent=TITLES[s]||"";
+  document.querySelector(".content").scrollTop=0;window.scrollTo(0,0);
+}
+
+/* ---------- biometric sim ---------- */
+function capture(){
+  const ring=document.getElementById("ring1"),st=document.getElementById("st1"),pr=document.getElementById("pr1"),btn=document.getElementById("btn1");
+  ring.className="fp-ring scanning";st.innerHTML="Leyendo huella dactilar...";btn.disabled=true;btn.style.opacity=".6";
+  let p=0;const iv=setInterval(()=>{p+=4;pr.style.width=p+"%";if(p>=100){clearInterval(iv);ring.className="fp-ring done";
+    st.innerHTML="<b>Huella capturada correctamente</b>";document.getElementById("status1").textContent="Registrada";document.getElementById("status1").style.color="var(--green)";
+    document.getElementById("res1").classList.add("show");btn.disabled=false;btn.style.opacity="1";btn.textContent="Registrar otra huella";}},70);
+}
+function validate(){
+  const ring=document.getElementById("ring2"),st=document.getElementById("st2"),pr=document.getElementById("pr2"),btn=document.getElementById("btn2");
+  ring.className="fp-ring scanning";st.innerHTML="Comparando con la base biométrica...";btn.disabled=true;btn.style.opacity=".6";
+  document.getElementById("vstate").textContent="Verificando...";document.getElementById("res2").classList.remove("show");
+  let p=0;const iv=setInterval(()=>{p+=5;pr.style.width=p+"%";if(p>=100){clearInterval(iv);ring.className="fp-ring done";
+    st.innerHTML="<b>Coincidencia encontrada</b>";
+    document.getElementById("vstate").textContent="Verificada";document.getElementById("vstate").style.color="var(--green)";
+    document.getElementById("vmatch").textContent="99.2 %";document.getElementById("vtime").textContent="1.4 s";
+    document.getElementById("res2").classList.add("show");btn.disabled=false;btn.style.opacity="1";btn.textContent="Escanear otra huella";}},60);
+}
+
+/* ---------- login + clock ---------- */
+function enter(){document.getElementById("login").style.display="none";document.getElementById("app").style.display="block";
+  renderInternos();renderPersonal();renderPase();go("dashboard",null);tick();setInterval(tick,1000);}
+function tick(){const d=new Date();document.getElementById("clock").textContent=
+  String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");}
+</script>
+</body>
+</html>
