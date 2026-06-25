@@ -203,6 +203,18 @@ tbody tr:hover{background:#FAFBFD}
 .note{font-size:11.5px;color:var(--muted-2);margin-top:14px;display:flex;align-items:center;gap:7px}
 .note svg{width:14px;height:14px}
 
+/* toasts */
+#toasts{position:fixed;right:20px;bottom:20px;z-index:100;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--navy-2);color:#fff;padding:12px 15px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 10px 30px rgba(14,27,46,.28);display:flex;align-items:center;gap:11px;min-width:250px;max-width:360px;border-left:3px solid var(--primary);animation:tin .25s ease}
+.toast.ok{border-left-color:var(--green)}
+.toast.warn{border-left-color:var(--amber)}
+.toast.bad{border-left-color:var(--red)}
+.toast svg{width:18px;height:18px;flex-shrink:0}
+.toast.out{animation:tout .3s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateX(24px)}}
+.empty{padding:28px 18px;text-align:center;color:var(--muted-2);font-size:13px}
+
 @media(min-width:1100px){.login-art{display:flex}}
 @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}.two-col,.row2,.bio-wrap,.form-grid{grid-template-columns:1fr}.side{display:none}}
 </style>
@@ -278,12 +290,12 @@ tbody tr:hover{background:#FAFBFD}
       <!-- ===== DASHBOARD (S4) ===== -->
       <section class="screen" id="screen-dashboard">
         <div class="phead"><div><h2>Dashboard de Monitoreo<span class="tag" style="background:var(--s4)">Sprint 4</span></h2><p>Estado de presencia de internos y alertas en tiempo real</p></div>
-          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 4v4h-4"/></svg>Actualizar</button></div>
+          <button class="btn" onclick="refreshDash(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 4v4h-4"/></svg>Actualizar</button></div>
         <div class="cards">
           <div class="stat"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>Total internos</div><div class="num">486</div><div class="sub">4 pabellones activos</div></div>
           <div class="stat ok"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Presentes</div><div class="num">472</div><div class="sub">97.1% del total</div></div>
           <div class="stat warn"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>Ausentes</div><div class="num">14</div><div class="sub">Último pase: 18:00</div></div>
-          <div class="stat dng"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6Z"/></svg>Alertas activas</div><div class="num">3</div><div class="sub">Requieren atención</div></div>
+          <div class="stat dng"><div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M12 4a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6Z"/></svg>Alertas activas</div><div class="num" id="dashAlerts">3</div><div class="sub">Requieren atención</div></div>
         </div>
         <div class="two-col">
           <div class="panel">
@@ -327,7 +339,7 @@ tbody tr:hover{background:#FAFBFD}
         <div class="phead"><div><h2>Internos<span class="tag" style="background:var(--s1)">Sprint 1</span></h2><p>Registro, actualización y baja lógica de internos</p></div>
           <button class="btn pri" onclick="go('intform',null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo interno</button></div>
         <div class="panel">
-          <div class="ph">486 internos registrados<span class="mini">Filtrar: Todos los pabellones</span></div>
+          <div class="ph"><span id="intCount">486 internos registrados</span><span class="mini">Filtrar: Todos los pabellones</span></div>
           <table>
             <thead><tr><th>Interno</th><th>Pabellón / Celda</th><th>Ingreso</th><th>Estado</th><th></th></tr></thead>
             <tbody id="intbody"></tbody>
@@ -342,17 +354,17 @@ tbody tr:hover{background:#FAFBFD}
         <div class="two-col">
           <div class="panel"><div class="ph">Datos del interno</div><div class="pb">
             <div class="form-grid">
-              <div class="fg"><label>Nombres</label><input placeholder="Ej. Carlos Alberto"/></div>
-              <div class="fg"><label>Apellidos</label><input placeholder="Ej. Ramírez Soto"/></div>
-              <div class="fg"><label>Identificador (ID)</label><input class="mono" value="INT-0487" /></div>
-              <div class="fg"><label>Documento (DNI)</label><input placeholder="00000000"/></div>
-              <div class="fg"><label>Pabellón</label><select><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
-              <div class="fg"><label>Celda</label><input placeholder="Ej. 24"/></div>
-              <div class="fg"><label>Fecha de ingreso</label><input type="date" value="2026-06-24"/></div>
-              <div class="fg"><label>Estado</label><select><option>Activo</option><option>Dado de baja</option></select></div>
-              <div class="fg full"><label>Observaciones</label><textarea rows="2" placeholder="Notas adicionales..."></textarea></div>
+              <div class="fg"><label>Nombres</label><input id="f_nombres" placeholder="Ej. Carlos Alberto"/></div>
+              <div class="fg"><label>Apellidos</label><input id="f_apellidos" placeholder="Ej. Ramírez Soto"/></div>
+              <div class="fg"><label>Identificador (ID)</label><input id="f_id" class="mono" value="INT-0487" /></div>
+              <div class="fg"><label>Documento (DNI)</label><input id="f_dni" placeholder="00000000"/></div>
+              <div class="fg"><label>Pabellón</label><select id="f_pab"><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
+              <div class="fg"><label>Celda</label><input id="f_celda" placeholder="Ej. 24"/></div>
+              <div class="fg"><label>Fecha de ingreso</label><input id="f_fecha" type="date" value="2026-06-24"/></div>
+              <div class="fg"><label>Estado</label><select id="f_estado"><option>Activo</option><option>Dado de baja</option></select></div>
+              <div class="fg full"><label>Observaciones</label><textarea id="f_obs" rows="2" placeholder="Notas adicionales..."></textarea></div>
             </div>
-            <div class="form-actions"><button class="btn" onclick="go('internos',null)">Cancelar</button><button class="btn pri" onclick="go('internos',null)">Guardar interno</button></div>
+            <div class="form-actions"><button class="btn" onclick="go('internos',null)">Cancelar</button><button class="btn pri" onclick="saveInterno()">Guardar interno</button></div>
           </div></div>
           <div class="panel"><div class="ph">Fotografía</div><div class="pb">
             <div class="photo-drop"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.2"/><path d="M8 6l1.5-2h5L16 6"/></svg>Subir fotografía<br><span style="font-size:11px">JPG o PNG · máx 2 MB</span></div></div>
@@ -366,7 +378,7 @@ tbody tr:hover{background:#FAFBFD}
       <!-- ===== PERSONAL (S1) ===== -->
       <section class="screen" id="screen-personal">
         <div class="phead"><div><h2>Personal de Seguridad<span class="tag" style="background:var(--s1)">Sprint 1</span></h2><p>Alta de personal y asignación de guardias a pabellones</p></div>
-          <button class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo personal</button></div>
+          <button class="btn pri" onclick="focusAssign()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo personal</button></div>
         <div class="row2">
           <div class="panel">
             <div class="ph">Guardias asignados</div>
@@ -376,10 +388,10 @@ tbody tr:hover{background:#FAFBFD}
             </table>
           </div>
           <div class="panel"><div class="ph">Asignar guardia a pabellón</div><div class="pb">
-            <div class="fg" style="margin-bottom:14px"><label>Personal de seguridad</label><select><option>Selecciona un guardia...</option><option>Luis Mendoza Quispe</option><option>Ana Torres Ríos</option><option>Pedro Salas Vega</option></select></div>
-            <div class="fg" style="margin-bottom:14px"><label>Pabellón</label><select><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
-            <div class="fg" style="margin-bottom:14px"><label>Turno</label><select><option>Mañana (06:00 - 14:00)</option><option>Tarde (14:00 - 22:00)</option><option>Noche (22:00 - 06:00)</option></select></div>
-            <button class="btn pri" style="width:100%;justify-content:center">Asignar guardia</button>
+            <div class="fg" style="margin-bottom:14px"><label>Personal de seguridad</label><select id="g_persona"><option value="">Selecciona un guardia...</option><option>Luis Mendoza Quispe</option><option>Ana Torres Ríos</option><option>Pedro Salas Vega</option><option>Rosa Núñez Campos</option><option>Jorge Lévano Pérez</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Pabellón</label><select id="g_pab"><option>Pabellón A</option><option>Pabellón B</option><option>Pabellón C</option><option>Pabellón D</option></select></div>
+            <div class="fg" style="margin-bottom:14px"><label>Turno</label><select id="g_turno"><option>Mañana</option><option>Tarde</option><option>Noche</option></select></div>
+            <button class="btn pri" style="width:100%;justify-content:center" onclick="assignGuardia()">Asignar guardia</button>
             <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>Cada pabellón requiere al menos un guardia por turno.</div>
           </div></div>
         </div>
@@ -443,20 +455,20 @@ tbody tr:hover{background:#FAFBFD}
       <!-- ===== HORARIOS (S3) ===== -->
       <section class="screen" id="screen-horarios">
         <div class="phead"><div><h2>Horarios de Pase de Lista<span class="tag" style="background:var(--s3)">Sprint 3</span></h2><p>Configuración de los horarios de control de asistencia</p></div>
-          <button class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo horario</button></div>
+          <button class="btn pri" onclick="addHorario()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nuevo horario</button></div>
         <div class="row2">
-          <div class="panel"><div class="ph">Horarios configurados</div><div class="pb">
-            <div class="slot"><div><div class="t">06:00</div><div class="d">Pase de lista matutino · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
-            <div class="slot"><div><div class="t">12:00</div><div class="d">Control de mediodía · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
-            <div class="slot"><div><div class="t">18:00</div><div class="d">Pase de lista vespertino · Todos los pabellones</div></div><div class="toggle"><i></i></div></div>
-            <div class="slot"><div><div class="t">22:00</div><div class="d">Control nocturno · Todos los pabellones</div></div><div class="toggle off"><i></i></div></div>
+          <div class="panel"><div class="ph">Horarios configurados</div><div class="pb" id="slotList">
+            <div class="slot"><div><div class="t">06:00</div><div class="d">Pase de lista matutino · Todos los pabellones</div></div><div class="toggle" onclick="toggleSlot(this)"><i></i></div></div>
+            <div class="slot"><div><div class="t">12:00</div><div class="d">Control de mediodía · Todos los pabellones</div></div><div class="toggle" onclick="toggleSlot(this)"><i></i></div></div>
+            <div class="slot"><div><div class="t">18:00</div><div class="d">Pase de lista vespertino · Todos los pabellones</div></div><div class="toggle" onclick="toggleSlot(this)"><i></i></div></div>
+            <div class="slot"><div><div class="t">22:00</div><div class="d">Control nocturno · Todos los pabellones</div></div><div class="toggle off" onclick="toggleSlot(this)"><i></i></div></div>
           </div></div>
           <div class="panel"><div class="ph">Configuración del control</div><div class="pb">
             <div class="fg" style="margin-bottom:14px"><label>Tolerancia de registro</label><select><option>5 minutos</option><option>10 minutos</option><option>15 minutos</option></select></div>
             <div class="fg" style="margin-bottom:14px"><label>Acción ante ausencia</label><select><option>Marcar ausente y generar alerta</option><option>Solo marcar ausente</option></select></div>
             <div class="fg" style="margin-bottom:14px"><label>Notificar a</label><select><option>Jefe de Seguridad</option><option>Supervisor de Pabellón</option></select></div>
-            <div class="kv"><span>Pases de lista diarios</span><b>3 activos</b></div>
-            <div class="kv"><span>Próximo pase</span><b class="mono">22:00</b></div>
+            <div class="kv"><span>Pases de lista diarios</span><b id="horCount">3 activos</b></div>
+            <div class="kv"><span>Próximo pase</span><b class="mono" id="nextPase">22:00</b></div>
           </div></div>
         </div>
       </section>
@@ -482,12 +494,14 @@ tbody tr:hover{background:#FAFBFD}
       <!-- ===== ALERTAS (S3) ===== -->
       <section class="screen" id="screen-alertas">
         <div class="phead"><div><h2>Alertas<span class="tag" style="background:var(--s3)">Sprint 3</span></h2><p>Notificaciones de incidencias al Jefe de Seguridad</p></div>
-          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Marcar todo como leído</button></div>
+          <button class="btn" onclick="markAllRead()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Marcar todo como leído</button></div>
         <div class="panel">
-          <div class="ph">Alertas activas<span class="mini">3 sin atender</span></div>
+          <div class="ph">Alertas activas<span class="mini" id="alertCount">3 sin atender</span></div>
+          <div id="alertActive">
           <div class="alert-item red"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Interno ausente no justificado</div><div class="am">INT-0142 · Pabellón C · Celda 24 · No registró huella en el pase de las 18:00</div></div><div class="tm">18:02</div></div>
           <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Lectura biométrica fallida</div><div class="am">INT-0098 · Pabellón B · 3 intentos sin coincidencia · reintento manual requerido</div></div><div class="tm">17:58</div></div>
           <div class="alert-item amber"><div class="ai"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="at">Pabellón bajo umbral de asistencia</div><div class="am">Pabellón C · 91% de presencia · 10 internos pendientes de registrar</div></div><div class="tm">18:00</div></div>
+          </div>
         </div>
         <div class="panel" style="margin-top:16px">
           <div class="ph">Historial · Resueltas</div>
@@ -500,6 +514,8 @@ tbody tr:hover{background:#FAFBFD}
   </div>
 </div>
 </div>
+
+<div id="toasts"></div>
 
 <script>
 /* ---------- data ---------- */
@@ -541,11 +557,13 @@ function badge(st){
 }
 function initials(n){const p=n.split(" ");return (p[0][0]+(p[p.length-1][0]||"")).toUpperCase();}
 
+const BASE_INTERNOS=478; // 478 + 8 visibles = 486 mostrados al inicio
 function renderInternos(){
-  document.getElementById("intbody").innerHTML=internos.map(r=>`
+  document.getElementById("intbody").innerHTML=internos.map((r,i)=>`
    <tr><td><div class="iname"><span class="avatar">${initials(r[0])}</span><div><div class="nm">${r[0]}</div><div class="id mono">${r[1]}</div></div></div></td>
    <td>${r[2]} · Celda ${r[3]}</td><td class="mono">${r[4]}</td><td>${badge(r[5])}</td>
-   <td style="text-align:right"><button class="tbtn">Editar</button></td></tr>`).join("");
+   <td style="text-align:right"><button class="tbtn" onclick="editInterno(${i})">${r[5]==="activo"?"Dar de baja":"Reactivar"}</button></td></tr>`).join("");
+  const c=document.getElementById("intCount");if(c)c.textContent=(BASE_INTERNOS+internos.length)+" internos registrados";
 }
 function renderPersonal(){
   document.getElementById("perbody").innerHTML=personal.map(r=>`
@@ -561,8 +579,100 @@ function renderPase(){
   document.getElementById("pPend").textContent=pase.filter(p=>p[3]==="pendiente").length;
   document.getElementById("pAbs").textContent=pase.filter(p=>p[3]==="ausente").length;
 }
-function regPase(i){const t=new Date();pase[i][2]=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");pase[i][3]="presente";renderPase();}
-function markAbsent(){pase.forEach(p=>{if(p[3]==="pendiente")p[3]="ausente";});renderPase();}
+function regPase(i){const t=new Date();pase[i][2]=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");pase[i][3]="presente";renderPase();toast("Huella registrada · "+pase[i][0]+" presente","ok");}
+function markAbsent(){const n=pase.filter(p=>p[3]==="pendiente").length;pase.forEach(p=>{if(p[3]==="pendiente")p[3]="ausente";});renderPase();toast(n?(n+" interno(s) marcados como ausentes"):"No quedan internos pendientes",n?"warn":"ok");}
+
+/* ---------- toasts ---------- */
+function toast(msg,type){
+  const wrap=document.getElementById("toasts");if(!wrap)return;
+  const t=document.createElement("div");t.className="toast"+(type?(" "+type):"");
+  const icons={ok:'<path d="M20 6 9 17l-5-5"/>',warn:'<path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/>',bad:'<path d="M18 6 6 18M6 6l12 12"/>'};
+  const ic=icons[type]||'<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>';
+  t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ic+'</svg><span>'+msg+'</span>';
+  wrap.appendChild(t);
+  setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),300);},3200);
+}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():"";}
+
+/* ---------- internos: alta + baja lógica ---------- */
+let nextIntId=488;
+function saveInterno(){
+  const nom=val("f_nombres"),ape=val("f_apellidos");
+  if(!nom||!ape){toast("Completa nombres y apellidos","warn");return;}
+  const id=val("f_id")||("INT-"+String(nextIntId).padStart(4,"0"));
+  const estado=val("f_estado")==="Dado de baja"?"baja":"activo";
+  internos.unshift([nom+" "+ape,id,val("f_pab")||"Pabellón A",val("f_celda")||"—",val("f_fecha")||"2026-06-24",estado]);
+  renderInternos();
+  nextIntId++;
+  ["f_nombres","f_apellidos","f_dni","f_celda","f_obs"].forEach(x=>{const e=document.getElementById(x);if(e)e.value="";});
+  const fid=document.getElementById("f_id");if(fid)fid.value="INT-"+String(nextIntId).padStart(4,"0");
+  toast("Interno "+nom+" "+ape+" registrado · "+id,"ok");
+  go("internos",null);
+}
+function editInterno(i){
+  const r=internos[i];r[5]=r[5]==="activo"?"baja":"activo";
+  renderInternos();
+  toast(r[0]+(r[5]==="baja"?" dado de baja (baja lógica)":" reactivado"),r[5]==="baja"?"warn":"ok");
+}
+
+/* ---------- personal: asignación ---------- */
+function assignGuardia(){
+  const persona=val("g_persona");
+  if(!persona){toast("Selecciona un guardia para asignar","warn");return;}
+  const pab=val("g_pab"),turno=val("g_turno");
+  personal.unshift([persona,pab,turno]);
+  renderPersonal();
+  const g=document.getElementById("g_persona");if(g)g.value="";
+  toast(persona+" asignado a "+pab+" · turno "+turno,"ok");
+}
+function focusAssign(){
+  const s=document.getElementById("g_persona");
+  if(s){s.scrollIntoView({behavior:"smooth",block:"center"});s.focus();}
+  toast("Completa el formulario para dar de alta al personal","ok");
+}
+
+/* ---------- horarios ---------- */
+function updateHorCount(){
+  const slots=[...document.querySelectorAll("#slotList .toggle")];
+  const activos=slots.filter(s=>!s.classList.contains("off"));
+  const hc=document.getElementById("horCount");if(hc)hc.textContent=activos.length+" activos";
+  const times=activos.map(s=>s.parentElement.querySelector(".t").textContent).sort();
+  const now=new Date(),hhmm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+  const np=document.getElementById("nextPase");if(np)np.textContent=(times.find(t=>t>hhmm)||times[0]||"—");
+}
+function toggleSlot(el){
+  el.classList.toggle("off");
+  const on=!el.classList.contains("off"),t=el.parentElement.querySelector(".t").textContent;
+  updateHorCount();
+  toast("Pase de las "+t+(on?" activado":" desactivado"),on?"ok":"warn");
+}
+function addHorario(){
+  let t=prompt("Hora del nuevo pase de lista (HH:MM):","15:00");
+  if(t===null)return;t=t.trim();
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)){toast("Hora no válida (usa formato HH:MM)","bad");return;}
+  const div=document.createElement("div");div.className="slot";
+  div.innerHTML='<div><div class="t">'+t+'</div><div class="d">Control personalizado · Todos los pabellones</div></div><div class="toggle" onclick="toggleSlot(this)"><i></i></div>';
+  document.getElementById("slotList").appendChild(div);
+  updateHorCount();
+  toast("Nuevo horario "+t+" agregado","ok");
+}
+
+/* ---------- alertas ---------- */
+function markAllRead(){
+  const box=document.getElementById("alertActive");
+  if(!box||!box.querySelector(".alert-item")){toast("No hay alertas pendientes","ok");return;}
+  box.innerHTML='<div class="empty">Sin alertas activas · todo en orden.</div>';
+  const ac=document.getElementById("alertCount");if(ac)ac.textContent="0 sin atender";
+  const da=document.getElementById("dashAlerts");if(da)da.textContent="0";
+  toast("Todas las alertas marcadas como leídas","ok");
+}
+
+/* ---------- dashboard ---------- */
+function refreshDash(btn){
+  const ic=btn&&btn.querySelector("svg");
+  if(ic){ic.style.transition="transform .6s ease";ic.style.transform="rotate(360deg)";setTimeout(()=>{ic.style.transition="";ic.style.transform="";},620);}
+  toast("Datos actualizados · "+new Date().toLocaleTimeString("es-PE"),"ok");
+}
 
 /* ---------- navigation ---------- */
 function go(s,el){
@@ -595,7 +705,7 @@ function validate(){
 
 /* ---------- login + clock ---------- */
 function enter(){document.getElementById("login").style.display="none";document.getElementById("app").style.display="block";
-  renderInternos();renderPersonal();renderPase();go("dashboard",null);tick();setInterval(tick,1000);}
+  renderInternos();renderPersonal();renderPase();updateHorCount();go("dashboard",null);tick();setInterval(tick,1000);}
 function tick(){const d=new Date();document.getElementById("clock").textContent=
   String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+String(d.getSeconds()).padStart(2,"0");}
 </script>
